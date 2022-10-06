@@ -76,7 +76,7 @@ describe('MoviesService', () => {
         expect(afterDelete).toBeLessThan(beforeDelete);
       });
 
-      it('should return a 404', () => {
+      it('should throw exception', () => {
         try {
           service.deleteOne(999);
         } catch (error) {
@@ -98,6 +98,30 @@ describe('MoviesService', () => {
         const afterCreate = service.getAll().length;
         expect(afterCreate).toBeGreaterThan(beforeCreate);
       });
+    });
+  });
+
+  // update
+  describe('update movie', () => {
+    it('should update a movie', () => {
+      service.create({
+        title: 'test movie',
+        genres: ['test'],
+        year: 2000,
+      });
+
+      service.update(1, { title: 'Updated Test', year: 2022 });
+      const movie = service.getOne(1);
+      expect(movie.title).toEqual('Updated Test');
+      expect(movie.year).toEqual(new Date().getFullYear());
+    });
+
+    it('should throw exception', () => {
+      try {
+        service.update(999, {});
+      } catch (error) {
+        expect(error).toBeInstanceOf(NotFoundException);
+      }
     });
   });
 });
