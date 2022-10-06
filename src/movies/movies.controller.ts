@@ -17,6 +17,7 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 export class MoviesController {
   constructor(private readonly moviesService: MoviesService) {}
 
+  // fastify 는 rest api 요청처리 속도가 express보다 겁나빠르다.
   @Get()
   getAll(): Movie[] {
     return this.moviesService.getAll();
