@@ -1,9 +1,10 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER, Inject, Injectable, Logger } from '@nestjs/common';
 import { CreateUserRequest } from './dto/create-user.request';
 import { EventEmitter2, OnEvent } from '@nestjs/event-emitter';
 import { UserCreatedEvent } from './events/user-created.event';
 import { v4 as uuidv4 } from 'uuid';
 import { Cron, CronExpression, SchedulerRegistry } from '@nestjs/schedule';
+import { Cache } from 'cache-manager';
 
 @Injectable()
 export class AppService {
@@ -12,14 +13,31 @@ export class AppService {
   constructor(
     private readonly eventEmitter: EventEmitter2,
     private schedulerRegistry: SchedulerRegistry,
+
+    // cache-manager을 주입
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   getHello(): string {
     return 'Hello World!';
   }
 
+  async getHelloRedis() {
+    // await this.cacheManager.set('cached_item', { key: 32 }, 10);
+    await this.cacheManager.set('cached_item', { key: 32 }, { ttl: 10 } as any);
+
+    // delete cache item
+    await this.cacheManager.del('cached_item');
+
+    // reset cache
+    await this.cacheManager.reset();
+    const cachedItem = await this.cacheManager.get('cached_item');
+    console.log(cachedItem);
+    return 'Hello Redis!';
+  }
+
   async createUser(body: CreateUserRequest) {
-    this.logger.log('Createing User...', body);
+    this.logger.log('Creating User...', body);
     const newId = uuidv4();
     const newEvent = new UserCreatedEvent(newId, body.email);
     this.eventEmitter.emit('user.created', newEvent);
